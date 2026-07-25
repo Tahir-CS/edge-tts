@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+onnxruntime==1.20.1
+ttstokenizer
+numpy
+requests
