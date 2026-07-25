@@ -104,11 +104,12 @@ async def tts_endpoint(request: Request):
             tokens = tokenizer(text)
             
             # Format inputs exactly as the INT8 model expects
-            style = voices[voice]
+            # Ensure style is strictly Rank 2 (1, 256) regardless of how it was saved
+            style = np.atleast_2d(np.squeeze(voices[voice]))
             
             inputs = {
                 "tokens": [[0, *tokens, 0]],
-                "style": style if len(style.shape) == 2 else [style],
+                "style": style,
                 "speed": np.ones(1, dtype=np.float32) * speed
             }
             
