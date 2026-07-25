@@ -51,7 +51,8 @@ async def startup_event():
     print("Loading tokenizer and voices...")
     tokenizer = IPATokenizer()
     with open(VOICES_FILE, "rb") as f:
-        voices = np.load(f, allow_pickle=True).item()
+        voices_data = np.load(f, allow_pickle=True)
+        voices = {k: voices_data[k] for k in voices_data.files}
     print("Kokoro-INT8 TTS Ready!")
 
 def generate_wav_buffer(audio_array, sample_rate=24000):
