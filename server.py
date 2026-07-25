@@ -2,16 +2,13 @@ import os
 import json
 import io
 import wave
+import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from piper.voice import PiperVoice
 import threading
 
 # Model paths
 MODEL_PATH = "model.onnx"
-CONFIG_PATH = "model.onnx.json"
-
-print("Loading Piper TTS (High Quality) Voice...")
-voice = PiperVoice.load(MODEL_PATH, config_path=CONFIG_PATH)
+PIPER_BIN = "./piper/piper"
 
 # Mutex to ensure strictly one generation at a time
 tts_lock = threading.Lock()
@@ -25,7 +22,7 @@ class TTSHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write(b'Piper TTS Raw Server Ready')
+        self.wfile.write(b'Piper TTS CLI Server Ready')
         
     def do_POST(self):
         if self.path != '/tts':
@@ -47,14 +44,25 @@ class TTSHandler(BaseHTTPRequestHandler):
                 return
 
             with tts_lock:
+                # Run the Piper C++ standalone binary, feed text via stdin, get raw PCM via stdout
+                process = subprocess.Popen(
+                    [PIPER_BIN, "-m", MODEL_PATH, "--output_raw"],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                
+                raw_pcm, err = process.communicate(input=text.encode('utf-8'))
+                
+                if process.returncode != 0:
+                    raise Exception(f"Piper Error: {err.decode('utf-8')}")
+                
                 buf = io.BytesIO()
                 with wave.open(buf, 'wb') as wav_file:
                     wav_file.setnchannels(1)
                     wav_file.setsampwidth(2)
-                    wav_file.setframerate(voice.config.sample_rate)
-                    # Use streaming raw API to explicitly write frames
-                    for audio_bytes in voice.synthesize_stream_raw(text):
-                        wav_file.writeframes(audio_bytes)
+                    wav_file.setframerate(22050) # Piper High quality sample rate
+                    wav_file.writeframes(raw_pcm)
                 
                 buf.seek(0)
                 wav_bytes = buf.read()
@@ -72,5 +80,5 @@ class TTSHandler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     server = ThreadingHTTPServer(('0.0.0.0', port), TTSHandler)
-    print(f"Piper TTS bare metal server running on port {port}")
+    print(f"Piper TTS CLI server running on port {port}")
     server.serve_forever()
