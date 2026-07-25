@@ -37,6 +37,13 @@ def download_file(url, filename):
 @app.on_event("startup")
 async def startup_event():
     global session, tokenizer, voices
+    
+    print("Downloading NLTK dependencies...")
+    import nltk
+    nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+    nltk.download('averaged_perceptron_tagger', quiet=True)
+    nltk.download('cmudict', quiet=True)
+    
     # Download models at boot to keep Git repo small
     download_file(ONNX_URL, ONNX_FILE)
     download_file(VOICES_URL, VOICES_FILE)
