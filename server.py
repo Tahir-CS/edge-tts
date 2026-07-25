@@ -96,12 +96,16 @@ async def tts_endpoint(request: Request):
             
             # voices[voice] is shape (510, 1, 256). Indexing by token_len gives (1, 256)
             raw_style = voices[voice][token_len]
-            style = np.atleast_2d(np.squeeze(raw_style))
+            
+            # Explicitly cast everything to exact required NumPy types to prevent ONNX crashes
+            style_array = np.atleast_2d(np.squeeze(raw_style)).astype(np.float32)
+            tokens_array = np.array([[0, *tokens, 0]], dtype=np.int64)
+            speed_array = np.array([speed], dtype=np.float32)
             
             inputs = {
-                "tokens": [[0, *tokens, 0]],
-                "style": style,
-                "speed": np.ones(1, dtype=np.float32) * speed
+                "tokens": tokens_array,
+                "style": style_array,
+                "speed": speed_array
             }
             
             # Run inference
