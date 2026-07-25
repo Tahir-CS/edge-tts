@@ -62,12 +62,12 @@ def generate_wav_buffer(audio_array, sample_rate=24000):
     buf.seek(0)
     return buf.read()
 
-@app.get("/ping")
+@app.api_route("/ping", methods=["GET", "HEAD"])
 def ping():
-    # Dedicated lightweight endpoint for Cron Jobs
+    # Dedicated lightweight endpoint for Cron Jobs and Health Checks
     return Response(content="pong", media_type="text/plain")
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"status": "ready", "message": "InkFolio Kokoro-INT8 TTS Server (Render)"}
 
