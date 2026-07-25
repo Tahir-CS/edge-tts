@@ -24,29 +24,9 @@ tokenizer = None
 voices = None
 tts_lock = asyncio.Lock()
 
-def download_file(url, filename):
-    if not os.path.exists(filename):
-        print(f"Downloading {filename} (~100MB)... This may take a minute.")
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        with open(filename, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        print(f"Downloaded {filename}")
-
 @app.on_event("startup")
 async def startup_event():
     global session, tokenizer, voices
-    
-    print("Downloading NLTK dependencies...")
-    import nltk
-    nltk.download('averaged_perceptron_tagger_eng', quiet=True)
-    nltk.download('averaged_perceptron_tagger', quiet=True)
-    nltk.download('cmudict', quiet=True)
-    
-    # Download models at boot to keep Git repo small
-    download_file(ONNX_URL, ONNX_FILE)
-    download_file(VOICES_URL, VOICES_FILE)
     
     print("Initializing ONNX CPU session...")
     # Strict CPU optimization to minimize RAM on Render 512MB
