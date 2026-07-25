@@ -47,9 +47,10 @@ async def startup_event():
     
     print("Loading tokenizer and voices...")
     tokenizer = IPATokenizer()
-    with open(VOICES_FILE, "rb") as f:
-        voices_data = np.load(f, allow_pickle=True)
-        voices = {k: voices_data[k] for k in voices_data.files}
+    voices_data = np.load(VOICES_FILE, allow_pickle=True)
+    # ONLY load the list of names (a few KB). We will lazy-load the actual 26MB tensors later!
+    voices = list(voices_data.files)
+    voices_data.close()
     print("Kokoro-INT8 TTS Ready!")
 
 def generate_wav_buffer(audio_array, sample_rate=24000):
@@ -98,8 +99,15 @@ async def tts_endpoint(request: Request):
             # Kokoro ONNX stores a different embedding for each sequence length up to 510
             token_len = min(len(tokens), 509)
             
-            # voices[voice] is shape (510, 1, 256). Indexing by token_len gives (1, 256)
-            raw_style = voices[voice][token_len]
+            # EXTREME RAM STARVATION: Load only the single requested voice from disk
+            voices_data = np.load(VOICES_FILE, allow_pickle=True)
+            raw_style = voices_data[voice][token_len]
+            voices_data.close()
+            del voices_data
+            
+            # Sledgehammer garbage collection before ONNX execution
+            import gc
+            gc.collect()
             
             # Explicitly cast everything to exact required NumPy types to prevent ONNX crashes
             style_array = np.atleast_2d(np.squeeze(raw_style)).astype(np.float32)
