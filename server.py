@@ -105,7 +105,12 @@ async def tts_endpoint(request: Request):
             
             # Format inputs exactly as the INT8 model expects
             # Ensure style is strictly Rank 2 (1, 256) regardless of how it was saved
-            style = np.atleast_2d(np.squeeze(voices[voice]))
+            # Kokoro ONNX stores a different embedding for each sequence length up to 510
+            token_len = min(len(tokens), 509)
+            
+            # voices[voice] is shape (510, 1, 256). Indexing by token_len gives (1, 256)
+            raw_style = voices[voice][token_len]
+            style = np.atleast_2d(np.squeeze(raw_style))
             
             inputs = {
                 "tokens": [[0, *tokens, 0]],
