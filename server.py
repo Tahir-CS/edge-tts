@@ -52,7 +52,9 @@ class TTSHandler(BaseHTTPRequestHandler):
                     wav_file.setnchannels(1)
                     wav_file.setsampwidth(2)
                     wav_file.setframerate(voice.config.sample_rate)
-                    voice.synthesize(text, wav_file)
+                    # Use streaming raw API to explicitly write frames
+                    for audio_bytes in voice.synthesize_stream_raw(text):
+                        wav_file.writeframes(audio_bytes)
                 
                 buf.seek(0)
                 wav_bytes = buf.read()
