@@ -12,9 +12,9 @@ import asyncio
 
 app = FastAPI()
 
-# Model download URLs (NeuML INT8 Kokoro model)
-ONNX_URL = "https://huggingface.co/NeuML/kokoro-int8-onnx/resolve/main/kokoro-v1.0.int8.onnx"
-VOICES_URL = "https://huggingface.co/NeuML/kokoro-int8-onnx/resolve/main/voices-v1.0.bin"
+# Model download URLs (thewh1teagle GitHub releases)
+ONNX_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.int8.onnx"
+VOICES_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin"
 
 ONNX_FILE = "kokoro-v1.0.int8.onnx"
 VOICES_FILE = "voices-v1.0.bin"
