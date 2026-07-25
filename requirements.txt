@@ -1,4 +1,1 @@
-onnxruntime
-ttstokenizer
-numpy
-requests
+piper-tts

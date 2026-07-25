@@ -1,28 +1,16 @@
 import os
-import requests
+import urllib.request
 
-ONNX_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.int8.onnx"
-VOICES_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin"
+MODEL_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/high/en_US-lessac-high.onnx"
+CONFIG_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/high/en_US-lessac-high.onnx.json"
 
 def download_file(url, filename):
     if not os.path.exists(filename):
         print(f"Downloading {filename}...")
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        with open(filename, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+        urllib.request.urlretrieve(url, filename)
         print(f"Downloaded {filename}")
 
 if __name__ == "__main__":
-    download_file(ONNX_URL, "kokoro-v1.0.int8.onnx")
-    download_file(VOICES_URL, "voices-v1.0.bin")
-    
-    print("Downloading NLTK dependencies to local folder...")
-    import nltk
-    import os
-    os.makedirs('./nltk_data', exist_ok=True)
-    nltk.download('averaged_perceptron_tagger_eng', download_dir='./nltk_data', quiet=True)
-    nltk.download('averaged_perceptron_tagger', download_dir='./nltk_data', quiet=True)
-    nltk.download('cmudict', download_dir='./nltk_data', quiet=True)
-    print("Setup complete!")
+    download_file(MODEL_URL, "model.onnx")
+    download_file(CONFIG_URL, "model.onnx.json")
+    print("Piper TTS Setup complete!")
