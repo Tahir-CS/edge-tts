@@ -11,8 +11,10 @@ import wave
 import asyncio
 import nltk
 
-# Point NLTK to the local directory where the build script downloaded the data
-nltk.data.path.append('./nltk_data')
+print("Downloading NLTK data into runtime environment...")
+nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
+nltk.download('cmudict', quiet=True)
 
 app = FastAPI()
 
