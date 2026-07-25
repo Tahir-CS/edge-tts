@@ -39,6 +39,10 @@ async def startup_event():
     options = ort.SessionOptions()
     options.intra_op_num_threads = 1
     options.inter_op_num_threads = 1
+    # CRITICAL: Disable memory arena to prevent OOM spikes during synthesis!
+    options.enable_cpu_mem_arena = False
+    options.enable_mem_pattern = False
+    
     session = ort.InferenceSession(ONNX_FILE, sess_options=options, providers=["CPUExecutionProvider"])
     
     print("Loading tokenizer and voices...")
