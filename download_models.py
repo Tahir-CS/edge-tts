@@ -18,9 +18,11 @@ if __name__ == "__main__":
     download_file(ONNX_URL, "kokoro-v1.0.int8.onnx")
     download_file(VOICES_URL, "voices-v1.0.bin")
     
-    print("Downloading NLTK dependencies...")
+    print("Downloading NLTK dependencies to local folder...")
     import nltk
-    nltk.download('averaged_perceptron_tagger_eng', quiet=True)
-    nltk.download('averaged_perceptron_tagger', quiet=True)
-    nltk.download('cmudict', quiet=True)
+    import os
+    os.makedirs('./nltk_data', exist_ok=True)
+    nltk.download('averaged_perceptron_tagger_eng', download_dir='./nltk_data', quiet=True)
+    nltk.download('averaged_perceptron_tagger', download_dir='./nltk_data', quiet=True)
+    nltk.download('cmudict', download_dir='./nltk_data', quiet=True)
     print("Setup complete!")

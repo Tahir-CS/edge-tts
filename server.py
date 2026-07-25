@@ -9,6 +9,10 @@ import os
 import io
 import wave
 import asyncio
+import nltk
+
+# Point NLTK to the local directory where the build script downloaded the data
+nltk.data.path.append('./nltk_data')
 
 app = FastAPI()
 
