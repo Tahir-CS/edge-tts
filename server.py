@@ -65,20 +65,24 @@ class TTSHandler(BaseHTTPRequestHandler):
                 if process.returncode != 0:
                     raise Exception(f"Piper Error: {err.decode('utf-8')}")
                 
+                import numpy as np
+                import soundfile as sf
+
+                # Piper outputs 16-bit PCM raw data.
+                # Load it into a NumPy array
+                audio_data = np.frombuffer(raw_pcm, dtype=np.int16)
+
+                # Compress directly to OGG Vorbis
                 buf = io.BytesIO()
-                with wave.open(buf, 'wb') as wav_file:
-                    wav_file.setnchannels(1)
-                    wav_file.setsampwidth(2)
-                    wav_file.setframerate(22050) # Piper High quality sample rate
-                    wav_file.writeframes(raw_pcm)
+                sf.write(buf, audio_data, 22050, format='OGG')
                 
                 buf.seek(0)
-                wav_bytes = buf.read()
+                ogg_bytes = buf.read()
                 
                 self.send_response(200)
-                self.send_header('Content-type', 'audio/wav')
+                self.send_header('Content-type', 'audio/ogg')
                 self.end_headers()
-                self.wfile.write(wav_bytes)
+                self.wfile.write(ogg_bytes)
                 
         except Exception as e:
             self.send_response(500)
