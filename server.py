@@ -6,9 +6,14 @@ import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
 
-# Model paths
-MODEL_PATH = "model.onnx"
 PIPER_BIN = "./piper/piper"
+
+MODELS = {
+    "en_US-lessac-high": "models/lessac-high.onnx",
+    "en_US-ryan-high": "models/ryan-high.onnx",
+    "en_US-amy-low": "models/amy-low.onnx",
+    "en_GB-alba-medium": "models/alba-medium.onnx"
+}
 
 # Mutex to ensure strictly one generation at a time
 tts_lock = threading.Lock()
@@ -36,6 +41,7 @@ class TTSHandler(BaseHTTPRequestHandler):
             data = json.loads(post_data.decode('utf-8'))
             
             text = data.get("text", "")
+            voice = data.get("voice", "en_US-lessac-high")
             
             if not text:
                 self.send_response(400)
@@ -43,10 +49,12 @@ class TTSHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b'{"error": "Text required"}')
                 return
 
+            model_path = MODELS.get(voice, MODELS["en_US-lessac-high"])
+
             with tts_lock:
                 # Run the Piper C++ standalone binary, feed text via stdin, get raw PCM via stdout
                 process = subprocess.Popen(
-                    [PIPER_BIN, "-m", MODEL_PATH, "--output_raw"],
+                    [PIPER_BIN, "-m", model_path, "--output_raw"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
