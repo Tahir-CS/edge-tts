@@ -5,6 +5,8 @@ import wave
 import subprocess
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
+import numpy as np
+import soundfile as sf
 
 PIPER_BIN = "./piper/piper"
 
@@ -64,9 +66,6 @@ class TTSHandler(BaseHTTPRequestHandler):
                 
                 if process.returncode != 0:
                     raise Exception(f"Piper Error: {err.decode('utf-8')}")
-                
-                import numpy as np
-                import soundfile as sf
 
                 # Piper outputs 16-bit PCM raw data.
                 # Load it into a NumPy array
